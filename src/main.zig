@@ -1,10 +1,19 @@
 const std = @import("std");
 const aoc_2024_zig = @import("aoc_2024_zig");
+const fs = std.fs;
+
+fn show(x: anytype) void {
+    std.debug.print("{}", .{x});
+}
 
 pub fn main() !void {
+    const puzzle_test = fs.Dir.openFile(fs.cwd(), "../resources/puzzle_text.txt", .{}) catch {
+        return {};
+    };
+    defer puzzle_test.close();
+    const buf: []u8 = "" ** 100;
     // Prints to stderr, ignoring potential errors.
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
-    try aoc_2024_zig.bufferedPrint();
+    std.debug.print("{}", .{try puzzle_test.read(buf)});
 }
 
 test "simple test" {
