@@ -1,19 +1,14 @@
 const std = @import("std");
 const aoc_2024_zig = @import("aoc_2024_zig");
-const fs = std.fs;
 
-fn show(x: anytype) void {
-    std.debug.print("{}", .{x});
-}
+const gBuffer: []u8 = undefined;
 
 pub fn main() !void {
-    const puzzle_test = fs.Dir.openFile(fs.cwd(), "../resources/puzzle_text.txt", .{}) catch {
-        return {};
-    };
-    defer puzzle_test.close();
-    const buf: []u8 = "" ** 100;
     // Prints to stderr, ignoring potential errors.
-    std.debug.print("{}", .{try puzzle_test.read(buf)});
+    const puzzle_text: []u8 = try std.fs.Dir.readFile(std.fs.cwd(), "../resources/puzzle_text.txt", gBuffer);
+
+    std.debug.print("{any}\n", .{puzzle_text});
+    try aoc_2024_zig.bufferedPrint();
 }
 
 test "simple test" {
