@@ -1,31 +1,26 @@
 const std = @import("std");
 const aoc_2024_zig = @import("aoc_2024_zig");
+const dsize = std.heap.pageSize();
 
-const gBuffer: []u8 = undefined;
+var ally = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+
+pub fn grabFileContents(a: std.mem.Allocator, path: []const u8, size: ?usize) ![]u8 {
+    const cwd = std.fs.cwd();
+    return try cwd.readFileAlloc(a, path, size orelse std.heap.pageSize());
+}
+
+pub fn getFile_rel(path: []const u8) !std.fs.File {
+    const file = try std.fs.cwd().openFile(path, .{});
+    return file;
+}
 
 pub fn main() !void {
-    // Prints to stderr, ignoring potential errors.
-    const puzzle_text: []u8 = try std.fs.Dir.readFile(std.fs.cwd(), "../resources/puzzle_text.txt", gBuffer);
-
-    std.debug.print("{any}\n", .{puzzle_text});
+    // std.debug.print("{s}", .{try grabFileContents(ally.allocator(), "resources/puzzleText.txt", null)});
+    defer ally.deinit();
+    const file = try getFile_rel("resources/puzzleText.txt");
+    var buffer: [dsize]u8 = undefined;
+    var reader = std.fs.File.reader(file, &buffer);
+    const content: []u8 = try reader.interface.readAlloc(ally.allocator(), 1024);
+    std.debug.print("{s}", .{content});
     try aoc_2024_zig.bufferedPrint();
-}
-
-test "simple test" {
-    const gpa = std.testing.allocator;
-    var list: std.ArrayList(i32) = .empty;
-    defer list.deinit(gpa); // Try commenting this out and see if zig detects the memory leak!
-    try list.append(gpa, 42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
-
-test "fuzz example" {
-    const Context = struct {
-        fn testOne(context: @This(), input: []const u8) anyerror!void {
-            _ = context;
-            // Try passing `--fuzz` to `zig build test` and see if it manages to fail this test case!
-            try std.testing.expect(!std.mem.eql(u8, "canyoufindme", input));
-        }
-    };
-    try std.testing.fuzz(Context{}, Context.testOne, .{});
 }
